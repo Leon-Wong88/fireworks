@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新春吉祥·扫码点餐</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8b0000 0%, #b22222 50%, #8b0000 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 烟花爆竹装饰 */
+        .firework {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* 头部样式 */
+        header {
+            text-align: center;
+            padding: 20px 0 30px;
+            background: linear-gradient(to bottom, #ffd700, #ff9900);
+            border-radius: 20px 20px 0 0;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "🎆";
+            position: absolute;
+            font-size: 40px;
+            top: 10px;
+            left: 20px;
+            opacity: 0.8;
+        }
+        
+        header::after {
+            content: "🧨";
+            position: absolute;
+            font-size: 40px;
+            top: 10px;
+            right: 20px;
+            opacity: 0.8;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: #8b0000;
+            text-shadow: 3px 3px 0 #ffd700;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #8b0000;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #8b0000;
+            padding: 12px;
+            border-radius: 10px;
+            display: inline-block;
+            font-weight: bold;
+            margin-top: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 菜单区域 */
+        .menu-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .menu-item {
+            background: linear-gradient(145deg, #fff9e6, #ffebcc);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 3px solid #ffd700;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 3px solid #ff9900;
+        }
+        
+        .item-info {
+            padding: 20px;
+        }
+        
+        .item-name {
+            color: #8b0000;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .item-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .item-price {
+            color: #b22222;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .quantity-btn {
+            background-color: #8b0000;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .quantity-btn:hover {
+            background-color: #b22222;
+            transform: scale(1.1);
+        }
+        
+        .quantity-display {
+            width: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #8b0000;
+            background-color: #fff9e6;
+            border: 2px solid #ff9900;
+            border-radius: 8px;
+            padding: 5px;
+        }
+        
+        /* 订单汇总 */
+        .order-summary {
+            background: linear-gradient(to bottom, #ffd700, #ff9900);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            border: 3px solid #8b0000;
+        }
+        
+        .summary-title {
+            color: #8b0000;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 0 #fff;
+        }
+        
+        .summary-details {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 10px;
+            min-width: 200px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .summary-label {
+            display: block;
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .summary-value {
+            display: block;
+            color: #8b0000;
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
+        
+        /* 已选菜品列表 */
+        .selected-items-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .selected-items-title {
+            color: #8b0000;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #ff9900;
+            padding-bottom: 10px;
+        }
+        
+        .selected-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .selected-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: rgba(255, 240, 200, 0.8);
+            border-radius: 8px;
+            border-left: 4px solid #8b0000;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .selected-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .selected-item-name {
+            color: #8b0000;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex: 1;
+        }
+        
+        .selected-item-quantity {
+            color: #b22222;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 0 15px;
+        }
+        
+        .selected-item-price {
+            color: #8b0000;
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .empty-selection {
+            text-align: center;
+            color: #666;
+            font-size: 1.1rem;
+            padding: 20px;
+            font-style: italic;
+        }
+        
+        /* 操作按钮 */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(to right, #666, #888);
+            color: white;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(to right, #8b0000, #b22222);
+            color: white;
+        }
+        
+        /* 底部样式 */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #ffd700;
+            font-size: 0.9rem;
+            border-top: 2px solid #ff9900;
+            margin-top: 20px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .menu-container {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .summary-details {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .selected-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .selected-item-name, .selected-item-quantity, .selected-item-price {
+                width: 100%;
+                text-align: left;
+            }
+            
+            .selected-item-quantity {
+                margin: 0;
+            }
+            
+            .selected-item-price {
+                text-align: right;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        .gold-text {
+            color: #ffd700;
+            text-shadow: 1px 1px 2px #8b0000;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- 烟花爆竹效果容器 -->
+    <div id="fireworks-container"></div>
+    
+    <div class="container">
+        <header>
+            <h1>🧧 新春吉祥·扫码点餐 🧧</h1>
+            <div class="subtitle">爆竹声中一岁除，春风送暖入屠苏</div>
+            <div class="instructions">
+                <i class="fas fa-qrcode"></i> 请扫描二维码点餐 | 选择菜品数量，系统自动计算总价
+            </div>
+        </header>
+        
+        <main>
+            <div class="menu-container" id="menu-container">
+                <!-- 菜单项将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="order-summary">
+                <h2 class="summary-title"><i class="fas fa-shopping-cart"></i> 订单汇总</h2>
+                
+                <!-- 已选菜品列表 -->
+                <div class="selected-items-container">
+                    <h3 class="selected-items-title"><i class="fas fa-list"></i> 已选菜品</h3>
+                    <div class="selected-items-list" id="selected-items-list">
+                        <!-- 已选菜品将动态生成在这里 -->
+                    </div>
+                </div>
+                
+                <div class="summary-details">
+                    <div class="summary-item">
+                        <span class="summary-label">已选菜品数量</span>
+                        <span id="total-items" class="summary-value">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">菜品总价</span>
+                        <span id="total-price" class="summary-value">¥0.00</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-reset" id="reset-btn">
+                        <i class="fas fa-redo"></i> 重置订单
+                    </button>
+                    <button class="btn btn-submit" id="submit-btn">
+                        <i class="fas fa-paper-plane"></i> 提交订单
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>🎇 恭贺新禧 · 万事如意 · 财源广进 · 阖家幸福 🎇</p>
+            <p>© 2025 新春吉祥餐厅 | 扫码点餐系统 | 服务热线: 8888-1688</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 菜单数据
+        const menuItems = [
+            {
+                id: 1,
+                name: "吉祥如意饺子",
+                description: "传统手工水饺，寓意招财进宝，吉祥如意",
+                price: 28.00,
+                image: "https://images.unsplash.com/photo-1607532941433-304659e8198a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 2,
+                name: "年年有余清蒸鱼",
+                description: "新鲜鲈鱼清蒸，肉质鲜嫩，寓意年年有余",
+                price: 68.00,
+                image: "https://images.unsplash.com/photo-1517244683847-7456b63c5969?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 3,
+                name: "金玉满堂炒饭",
+                description: "黄金虾仁炒饭，配料丰富，象征金玉满堂",
+                price: 38.00,
+                image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?ixlib=rb-4.0.3&auto=format&fit=crop&w-600&q=80"
+            },
+            {
+                id: 4,
+                name: "团团圆圆汤圆",
+                description: "芝麻馅汤圆，甜而不腻，象征团团圆圆",
+                price: 22.00,
+                image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 5,
+                name: "步步高升年糕",
+                description: "香甜软糯年糕，寓意步步高升，事业有成",
+                price: 32.00,
+                image: "https://images.unsplash.com/photo-1578985545060-4c1024e57d9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 6,
+                name: "花开富贵拼盘",
+                description: "精美冷菜拼盘，造型美观，象征花开富贵",
+                price: 48.00,
+                image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 7,
+                name: "红红火火火锅",
+                description: "麻辣鲜香火锅，热气腾腾，寓意红红火火",
+                price: 128.00,
+                image: "https://images.unsplash.com/photo-1555942333-2c6dabe7c7e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 8,
+                name: "甜蜜蜜八宝饭",
+                description: "传统八宝饭，甜甜蜜蜜，象征生活美满",
+                price: 36.00,
+                image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+        
+        // 当前订单数据
+        let order = {};
+        
+        // 初始化菜单
+        function initMenu() {
+            const menuContainer = document.getElementById('menu-container');
+            menuContainer.innerHTML = '';
+            
+            menuItems.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="item-image">
+                    <div class="item-info">
+                        <h3 class="item-name">${item.name}</h3>
+                        <p class="item-desc">${item.description}</p>
+                        <div class="item-price">¥${item.price.toFixed(2)}</div>
+                        <div class="quantity-control">
+                            <button class="quantity-btn decrease-btn" data-id="${item.id}">-</button>
+                            <input type="text" class="quantity-display" id="qty-${item.id}" value="0" readonly>
+                            <button class="quantity-btn increase-btn" data-id="${item.id}">+</button>
+                        </div>
+                    </div>
+                `;
+                menuContainer.appendChild(menuItem);
+                
+                // 初始化订单数量
+                order[item.id] = 0;
+            });
+            
+            // 添加事件监听器
+            document.querySelectorAll('.increase-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    changeQuantity(id, 1);
+                });
+            });
+            
+            document.querySelectorAll('.decrease-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    changeQuantity(id, -1);
+                });
+            });
+        }
+        
+        // 更新已选菜品列表
+        function updateSelectedItemsList() {
+            const selectedItemsList = document.getElementById('selected-items-list');
+            selectedItemsList.innerHTML = '';
+            
+            let hasSelectedItems = false;
+            
+            menuItems.forEach(item => {
+                const quantity = order[item.id];
+                if (quantity > 0) {
+                    hasSelectedItems = true;
+                    const itemTotal = quantity * item.price;
+                    const selectedItem = document.createElement('div');
+                    selectedItem.className = 'selected-item slide-in';
+                    selectedItem.innerHTML = `
+                        <span class="selected-item-name">${item.name}</span>
+                        <span class="selected-item-quantity">× ${quantity}</span>
+                        <span class="selected-item-price">¥${itemTotal.toFixed(2)}</span>
+                    `;
+                    selectedItemsList.appendChild(selectedItem);
+                }
+            });
+            
+            if (!hasSelectedItems) {
+                selectedItemsList.innerHTML = '<div class="empty-selection">暂未选择菜品，请从上方菜单选择</div>';
+            }
+        }
+        
+        // 修改菜品数量
+        function changeQuantity(id, delta) {
+            const newQuantity = order[id] + delta;
+            
+            // 确保数量不小于0
+            if (newQuantity >= 0) {
+                order[id] = newQuantity;
+                document.getElementById(`qty-${id}`).value = newQuantity;
+                
+                // 添加动画效果
+                document.getElementById(`qty-${id}`).classList.add('pulse');
+                setTimeout(() => {
+                    document.getElementById(`qty-${id}`).classList.remove('pulse');
+                }, 500);
+                
+                updateOrderSummary();
+                createFirework();
+            }
+        }
+        
+        // 更新订单汇总
+        function updateOrderSummary() {
+            let totalItems = 0;
+            let totalPrice = 0;
+            
+            // 计算总数量和总价
+            menuItems.forEach(item => {
+                const quantity = order[item.id];
+                totalItems += quantity;
+                totalPrice += quantity * item.price;
+            });
+            
+            // 更新显示
+            document.getElementById('total-items').textContent = totalItems;
+            document.getElementById('total-price').textContent = `¥${totalPrice.toFixed(2)}`;
+            
+            // 更新已选菜品列表
+            updateSelectedItemsList();
+            
+            // 如果总价大于0，添加动画效果
+            if (totalPrice > 0) {
+                document.getElementById('total-price').classList.add('gold-text');
+            } else {
+                document.getElementById('total-price').classList.remove('gold-text');
+            }
+        }
+        
+        // 重置订单
+        function resetOrder() {
+            menuItems.forEach(item => {
+                order[item.id] = 0;
+                document.getElementById(`qty-${item.id}`).value = 0;
+            });
+            
+            updateOrderSummary();
+            
+            // 添加庆祝效果
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => createFirework(), i * 50);
+            }
+        }
+        
+        // 提交订单
+        function submitOrder() {
+            let totalItems = 0;
+            let totalPrice = 0;
+            
+            menuItems.forEach(item => {
+                const quantity = order[item.id];
+                totalItems += quantity;
+                totalPrice += quantity * item.price;
+            });
+            
+            if (totalItems === 0) {
+                alert("请先选择菜品！");
+                return;
+            }
+            
+            // 构建订单详情
+            let orderDetails = "您的订单详情：\n\n";
+            menuItems.forEach(item => {
+                if (order[item.id] > 0) {
+                    const itemTotal = order[item.id] * item.price;
+                    orderDetails += `${item.name} x${order[item.id]} = ¥${itemTotal.toFixed(2)}\n`;
+                }
+            });
+            
+            orderDetails += `\n总计: ${totalItems} 道菜品, 总价: ¥${totalPrice.toFixed(2)}`;
+            orderDetails += "\n\n祝您用餐愉快，新年快乐！";
+            
+            alert(orderDetails);
+            
+            // 添加庆祝效果
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => createFirework(), i * 30);
+            }
+        }
+        
+        // 创建烟花爆竹效果
+        function createFirework() {
+            const container = document.getElementById('fireworks-container');
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            
+            // 随机位置
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            
+            // 随机颜色
+            const colors = ['#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#ff00ff'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // 设置样式
+            firework.style.left = `${x}px`;
+            firework.style.top = `${y}px`;
+            firework.style.backgroundColor = color;
+            firework.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}`;
+            
+            container.appendChild(firework);
+            
+            // 动画效果
+            const size = Math.random() * 10 + 5;
+            firework.animate([
+                { transform: 'scale(0)', opacity: 1 },
+                { transform: `scale(${size})`, opacity: 0 }
+            ], {
+                duration: 1000,
+                easing: 'ease-out'
+            });
+            
+            // 移除元素
+            setTimeout(() => {
+                container.removeChild(firework);
+            }, 1000);
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            initMenu();
+            updateOrderSummary();
+            
+            // 添加事件监听器
+            document.getElementById('reset-btn').addEventListener('click', resetOrder);
+            document.getElementById('submit-btn').addEventListener('click', submitOrder);
+            
+            // 随机创建一些初始烟花效果
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => createFirework(), i * 200);
+            }
+            
+            // 定时创建烟花效果
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    createFirework();
+                }
+            }, 1000);
+        });
+        
+        // 窗口大小变化时调整烟花容器
+        window.addEventListener('resize', function() {
+            const container = document.getElementById('fireworks-container');
+            container.innerHTML = '';
+        });
+    </script>
+</body>
+</html>
